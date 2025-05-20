@@ -1,6 +1,7 @@
 package pl.edu.pjwstk.s25819.smartcity.aggregateddata.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import pl.edu.pjwstk.s25819.smartcity.sensors.avro.model.AirQualityObserved;
 
 import java.time.Instant;
 
@@ -13,10 +14,10 @@ public class AggregationState {
     public long count = 0;
 
     public AggregationState add(AirQualityObserved d) {
-        sumPm10 += d.pm10;
-        sumPm25 += d.pm2_5;
-        sumTemp += d.temperature;
-        sumHumidity += d.humidity;
+        sumPm10 += d.getPm10();
+        sumPm25 += d.getPm25();
+        sumTemp += d.getTemperature();
+        sumHumidity += d.getHumidity();
         count++;
         return this;
     }

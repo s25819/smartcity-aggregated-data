@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: smartcity-aggregated-data
+  kafka:
+#    bootstrap-servers: sc_kafka_1:29092,sc_kafka_2:29093,sc_kafka_3:29094
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    topics:
+      airquality: sensor-airquality
+    streams:
+      properties:
+        auto.offset.reset: earliest
+    properties:
+      schema.registry.url: http://localhost:8091
+
+
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    metrics:
+      access: read_only
+  metrics:
+    enable:
+      all: true
+      kafka:
+        streams: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
