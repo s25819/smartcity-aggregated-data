@@ -10,4 +10,7 @@ public class KafkaTopicsConfig {
 
     @Value("${spring.kafka.topics.airquality}")
     private String airQualityTopic;
+
+    @Value("${spring.kafka.topics.airquality-averages}")
+    private String airQualityAveragesTopic;
 }

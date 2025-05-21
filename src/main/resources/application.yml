@@ -1,18 +1,20 @@
 spring:
+  profiles:
+    active: kafka-local
+
   application:
     name: smartcity-aggregated-data
   kafka:
-#    bootstrap-servers: sc_kafka_1:29092,sc_kafka_2:29093,sc_kafka_3:29094
-    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    bootstrap-servers: localhost:9092
     topics:
       airquality: sensor-airquality
+      airquality-averages: sensor-airquality-averages
+      replication-factor: 3
     streams:
       properties:
         auto.offset.reset: earliest
     properties:
       schema.registry.url: http://localhost:8091
-
-
 
 server:
   port: 8082

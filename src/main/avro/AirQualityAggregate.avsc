@@ -1,0 +1,41 @@
+{
+  "type": "record",
+  "name": "AirQualityAggregate",
+  "namespace": "pl.edu.pjwstk.s25819.smartcity.sensors.avro.model",
+  "fields": [
+    {
+      "name": "sensorId",
+      "type": "string"
+    },
+    {
+      "name": "avgPm10",
+      "type": "double"
+    },
+    {
+      "name": "avgPm25",
+      "type": "double"
+    },
+    {
+      "name": "avgTemperature",
+      "type": "double"
+    },
+    {
+      "name": "avgHumidity",
+      "type": "double"
+    },
+    {
+      "name": "start",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "end",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    }
+  ]
+}

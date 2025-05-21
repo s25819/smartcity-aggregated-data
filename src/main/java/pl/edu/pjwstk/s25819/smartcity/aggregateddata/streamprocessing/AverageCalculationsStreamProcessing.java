@@ -8,9 +8,9 @@ import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.*;
 import org.springframework.stereotype.Component;
 import pl.edu.pjwstk.s25819.smartcity.aggregateddata.config.KafkaTopicsConfig;
-import pl.edu.pjwstk.s25819.smartcity.aggregateddata.model.AggregationState;
-import pl.edu.pjwstk.s25819.smartcity.aggregateddata.model.AirQualityAverage;
+import pl.edu.pjwstk.s25819.smartcity.aggregateddata.model.AirQualityAggregationState;
 import pl.edu.pjwstk.s25819.smartcity.aggregateddata.serdes.JsonSerde;
+import pl.edu.pjwstk.s25819.smartcity.sensors.avro.model.AirQualityAggregate;
 import pl.edu.pjwstk.s25819.smartcity.sensors.avro.model.AirQualityObserved;
 
 
@@ -27,26 +27,33 @@ public class AverageCalculationsStreamProcessing {
     private static final Duration WINDOW_SIZE = Duration.ofSeconds(30);
 
     private final SpecificAvroSerde<AirQualityObserved> airQualityObservedSerde;
+    private final SpecificAvroSerde<AirQualityAggregate> airQualityAggregateSerde;
 
     public void buildPipeline(StreamsBuilder builder) {
-        JsonSerde<AggregationState> stateSerde = new JsonSerde<>(AggregationState.class);
-        JsonSerde<AirQualityAverage> outputSerde = new JsonSerde<>(AirQualityAverage.class);
-
-        builder.stream(kafkaTopicsConfig.getAirQualityTopic() , Consumed.with(Serdes.String(), airQualityObservedSerde))
+        JsonSerde<AirQualityAggregationState> stateSerde = new JsonSerde<>(AirQualityAggregationState.class);
+        
+        var consumedConfig = Consumed.with(Serdes.String(), airQualityObservedSerde);
+        var producedConfig = Produced.with(Serdes.String(), airQualityAggregateSerde);
+        
+        builder.stream(kafkaTopicsConfig.getAirQualityTopic(), consumedConfig)
                 .groupByKey()
                 .windowedBy(TimeWindows.ofSizeWithNoGrace(WINDOW_SIZE))
                 .aggregate(
-                        AggregationState::new,
+                        AirQualityAggregationState::new,
                         (key, value, aggregate) -> aggregate.add(value),
                         Materialized.with(Serdes.String(), stateSerde)
                 )
                 .toStream()
-                .map((windowedKey, aggState) -> {
-                    Instant start = Instant.ofEpochMilli(windowedKey.window().start());
-                    Instant end = Instant.ofEpochMilli(windowedKey.window().end());
-                    AirQualityAverage avg = aggState.computeAverage(windowedKey.key(), start, end);
-                    return new KeyValue<>(windowedKey.key(), avg);
-                })
-                .to("smartcity-averages", Produced.with(Serdes.String(), outputSerde));
+                .map(this::calculateAverages)
+                .to(kafkaTopicsConfig.getAirQualityAveragesTopic(), producedConfig);
+    }
+
+    private KeyValue<String, AirQualityAggregate> calculateAverages(Windowed<String> windowedKey, AirQualityAggregationState aggState) {
+        Instant startTime = Instant.ofEpochMilli(windowedKey.window().start());
+        Instant endTime = Instant.ofEpochMilli(windowedKey.window().end());
+        String sensorId = windowedKey.key();
+        
+        AirQualityAggregate avgResult = aggState.computeAverage(sensorId, startTime, endTime);
+        return new KeyValue<>(sensorId, avgResult);
     }
 }

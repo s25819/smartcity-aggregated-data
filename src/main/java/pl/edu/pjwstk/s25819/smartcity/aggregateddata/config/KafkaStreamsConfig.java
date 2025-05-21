@@ -1,7 +1,9 @@
 package pl.edu.pjwstk.s25819.smartcity.aggregateddata.config;
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
+import lombok.RequiredArgsConstructor;
 import org.apache.avro.specific.SpecificRecord;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
@@ -9,12 +11,14 @@ import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 @Configuration
+@RequiredArgsConstructor
 public class KafkaStreamsConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
@@ -22,6 +26,11 @@ public class KafkaStreamsConfig {
 
     @Value("${spring.kafka.properties.schema.registry.url}")
     private String schemaRegistryUrl;
+
+    @Value("${spring.kafka.topics.replication-factor:3}")
+    private int replicationFactor;
+
+    public final KafkaTopicsConfig kafkaTopicsConfig;
 
     @Bean
     public StreamsConfig streamsConfig() {
@@ -33,6 +42,15 @@ public class KafkaStreamsConfig {
         props.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndContinueExceptionHandler.class);
         props.put("schema.registry.url", schemaRegistryUrl);
         return new StreamsConfig(props);
+    }
+
+    @Bean
+    public NewTopic airQualityAveragesTopic() {
+        return TopicBuilder
+                .name(kafkaTopicsConfig.getAirQualityAveragesTopic())
+                .replicas(replicationFactor)
+                .partitions(3)
+                .build();
     }
 
     @Bean

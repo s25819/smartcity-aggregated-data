@@ -17,17 +17,16 @@ public class StreamBootstrap {
     private final StreamsConfig streamsConfig;
     private final AverageCalculationsStreamProcessing streamLogic;
 
-    private KafkaStreams streams; // zapamiętujemy instancję!
+    private KafkaStreams streams;
 
     @PostConstruct
     public void start() {
         streamLogic.buildPipeline(builder);
         Topology topology = builder.build();
         this.streams = new KafkaStreams(topology, streamsConfig);
-        this.streams.start(); // zostaje aktywna
+        this.streams.start();
     }
 
-    // Opcjonalnie - zamykanie przy wyłączaniu aplikacji
     @PreDestroy
     public void stop() {
         if (streams != null) {
