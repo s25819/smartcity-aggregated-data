@@ -18,6 +18,7 @@
         <java.version>17</java.version>
         <kafka-streams.version>3.6.0</kafka-streams.version>
         <confluent.version>7.6.0</confluent.version>
+        <jakarta.validation.version>3.1.1</jakarta.validation.version>
     </properties>
 
     <dependencies>
@@ -116,6 +117,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${jakarta.validation.version}</version>
         </dependency>
 
         <!-- Test -->

@@ -1,6 +1,7 @@
 package pl.edu.pjwstk.s25819.smartcity.aggregateddata.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,27 @@ public class GenericExceptionHandler {
 
     @Value("${spring.application.name}")
     private String serviceName;
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException ex, HttpServletRequest request) {
+        var errors = ex.getConstraintViolations().stream()
+                .map(violation -> Map.of(
+                        "param", violation.getPropertyPath().toString(),
+                        "message", violation.getMessage()
+                )).toList();
+
+
+        GenericErrorResponseDto errorResponse = new GenericErrorResponseDto(
+                serviceName,
+                errors.toString(),
+                "Validation Error",
+                request.getRequestURI(),
+                HttpStatus.BAD_REQUEST.value(),
+                System.currentTimeMillis()
+        );
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationException(MethodArgumentNotValidException ex) {

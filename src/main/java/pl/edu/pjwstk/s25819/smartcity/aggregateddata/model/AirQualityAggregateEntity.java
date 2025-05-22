@@ -5,12 +5,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Entity
 @Table(name = "air_quality_averages")
 @Data
 @NoArgsConstructor
-public class AirQualityAggregateEntity {
+public class AirQualityAggregateEntity implements SensorAggregateData {
 
     @Id
     @GeneratedValue
@@ -27,4 +28,14 @@ public class AirQualityAggregateEntity {
 
     @Column(name = "end_window")
     private Instant endWindow;
+
+    @Override
+    public String getSensorType() {
+        return "AIR_QUALITY";
+    }
+
+    @Override
+    public Map<String, Double> getValues() {
+        return Map.of("pm10", avgPm10, "pm25", avgPm25, "temperature", avgTemperature, "humidity", avgHumidity);
+    }
 }
