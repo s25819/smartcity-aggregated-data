@@ -36,7 +36,7 @@ public class SensorAggregatesServiceImpl implements pl.edu.pjwstk.s25819.smartci
 //            case "TRAFFIC_FLOW" -> (sensorId == null)
 //                    ? trafficRepo.findByStartWindowBetween(startTime, endTime)
 //                    : trafficRepo.findBySensorIdAndStartWindowBetween(sensorId, startTime, endTime);
-            default -> throw new IllegalArgumentException("Unknown sensor type: " + sensorType);
+            default -> throw new IllegalArgumentException("Nieznany typ sensora: " + sensorType);
         };
 
         return aggregate(records, resolution);

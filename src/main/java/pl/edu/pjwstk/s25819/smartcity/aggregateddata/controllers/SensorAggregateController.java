@@ -1,5 +1,6 @@
 package pl.edu.pjwstk.s25819.smartcity.aggregateddata.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.pjwstk.s25819.smartcity.aggregateddata.dto.AvailableSensorsRequestDto;
 import pl.edu.pjwstk.s25819.smartcity.aggregateddata.dto.AvailableSensorsResponseDto;
+import pl.edu.pjwstk.s25819.smartcity.aggregateddata.dto.SensorAggregateRequestDto;
 import pl.edu.pjwstk.s25819.smartcity.aggregateddata.dto.SensorAggregateResponseDto;
 import pl.edu.pjwstk.s25819.smartcity.aggregateddata.services.SensorAggregatesService;
 
@@ -23,14 +25,10 @@ public class SensorAggregateController {
     private final SensorAggregatesService sensorAggregatesService;
 
     @GetMapping("/sensor/{sensorId}")
-    public ResponseEntity<List<SensorAggregateResponseDto>> getBySensorId(
-            @PathVariable String sensorId,
-            @RequestParam String sensorType,
-            @RequestParam String startTime,
-            @RequestParam(required = false) String endTime,
-            @RequestParam(defaultValue = "1min") String resolution
-    ) {
-        return ResponseEntity.ok(sensorAggregatesService.getAggregates(sensorType, sensorId, startTime, endTime, resolution));
+    public ResponseEntity<List<SensorAggregateResponseDto>> getBySensorId(@Valid @ModelAttribute SensorAggregateRequestDto request) {
+        log.info("Pobranie zagregowanych danych dla czujnika: {}", request);
+
+        return ResponseEntity.ok(sensorAggregatesService.getAggregates(request.sensorType(), request.sensorId(), request.startTime(), request.endTime(), request.resolution()));
     }
 
     @GetMapping("/type/{sensorType}")
